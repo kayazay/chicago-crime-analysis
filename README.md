@@ -326,7 +326,7 @@ crime_tweak[['dayOfWeek','hourDay','timeOfDay','month']] = date_df
 
 At this point, the dataset has been fully prepared, thus we commence an actual __Analysis__.
 
-<img src = "https://user-images.githubusercontent.com/60517587/193717269-041a3c02-e1aa-4627-a51f-ba5a7da01513.gif" width=80% height=20%/>
+<img src = "https://user-images.githubusercontent.com/60517587/193717269-041a3c02-e1aa-4627-a51f-ba5a7da01513.gif" width=50% height=20%/>
 
 Before that, though, a final variable-switch to lock in all changes - `crime_df = crime_tweak`.
 
