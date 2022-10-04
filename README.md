@@ -30,11 +30,13 @@ import seaborn as sns
 import re
 import matplotlib.pyplot as plt
 ```
+
 ### Loading the Dataset
 ```py
 filepath  =  "C:/Users/user/Desktop/eze/"
 crime  =  pd.read_csv(filepath+"crime_data_Proj1.csv",index_col=0)
 ```
+
 _**Note:** The variable `filepath` may be tweaked in accordance with the directory that holds the datasets._
 
 ### Overview
@@ -70,7 +72,9 @@ Data columns (total 22 columns):
 dtypes: bool(2), float64(7), int64(3), object(10)
 memory usage: 369.4+ MB
 ```
+
 Inferences from this statistic would be highlighted in the next phase. First, though, I switch variables to `crime_clean`.
+
 ```py
 crime_clean  =  crime
 ```
@@ -89,7 +93,8 @@ crime_clean['Date']  = crime_clean['Date'].apply(lambda  x:  x  if  type(x)!=str
 ### 2. `District`, `Ward`, `Community Area` & `Beat`
 
 > These are recognized as floats since they are technically numbers; as opposed to objects since they are really elements of location.
-> A custom function - `to_str()` was created to explicitly perform the conversion.
+>
+>  A custom function - `to_str()` was created to explicitly perform the conversion.
 
 ```py
 # Created a function that returns null if the value in a column is null & converts to a string if it is not
@@ -104,6 +109,7 @@ def to_str(_unit):
 BCDW = ['Beat', 'Community Area', 'District', 'Ward']
 crime_clean[BCDW] = crime_clean[BCDW].applymap(to_str)
 ```
+
 ### 3. Investigate for Missing Values
 
 `crime_clean.isna().sum()` shows us how many records in each column have missing values.
@@ -162,14 +168,15 @@ As per my ritual, once again - variable switch 👌🏽
 
  `crime_tweak = crime_clean`
 
-Here, we look for more features or columns to extract from our dataset for it to hold more _"analytical water"_. 
-
-To start, __OBSERVE the following columns...__
+Here, we look for more features or columns to extract from our dataset for it to hold more _"analytical water"_. __OBSERVE the following new columns...__
 
 <img src = "https://user-images.githubusercontent.com/60517587/193694512-ccd5d4a4-8a0a-4e30-a41c-62d9ec078a3d.gif" width=50% height=10%/>
 
-###`Block`
-This column holds the full address of the location a reported crime occurred. `crime_tweak['Block'].head(40).values` gives us the first few records of this column:
+### Street Type
+
+This column holds the full address of the location a reported crime occurred. 
+
+> `crime_tweak['Block'].head(40).values` gives us the first few records of this column:
 
 ```	py
 array(['085XX S MUSKEGON AVE', '092XX S ELLIS AVE', '062XX N TRIPP AVE',
@@ -189,6 +196,7 @@ array(['085XX S MUSKEGON AVE', '092XX S ELLIS AVE', '062XX N TRIPP AVE',
        '001XX S PULASKI RD', '001XX N DAMEN AVE', '048XX N AVERS AVE'],
       dtype=object)
 ```
+
 There is a pattern in the last word for most records in this column.
 
 > __AVE__, __ST__, __BLVD__, __RD__, ...
@@ -201,7 +209,7 @@ The __USPS__ suffix abbreviations was referenced to accomplish this.
 
   > This table is a universal standard for comparing street abbreviations and their full forms.
   > 
-  > https://www.pb.com/docs/us/pdf/sis/mail-services/usps-suffix-abbreviations.pdf
+  > Link: _https://www.pb.com/docs/us/pdf/sis/mail-services/usps-suffix-abbreviations.pdf_
 
 <details>
     <summary>
@@ -244,6 +252,8 @@ For value matching, this was converted into a __dictionary__ with `Commonly Used
   abbrev_dict = dict(zip(abbrev['Commonly Used Street'], abbrev['Primary Street']))
   ```
 
+### Actual Street
+
 After this, the function `func_block()` was devised to extract the street types from __`Block`__, cross match with the USPS abbreviations, and output their corresponding full meanings as a new column.
 
 ```py
@@ -277,7 +287,7 @@ def street_func(it2B):
 crime_tweak['actualStreet'] = crime_tweak['Block'].apply(street_func)
 ```
 
-__`Date`__
+### Components of Date
 
 The following features could be extracted from the `Date` column:-
 
@@ -682,7 +692,7 @@ plt.show()
 <img src = "https://user-images.githubusercontent.com/60517587/192198990-9ab59b2c-ec66-4e1e-8305-2a252cb6fc47.png">
 
 + `Ward` __43__ particularly has close to 12% rate of arrest.
-+ However, other `Wards` have rate of arrest of 15% and above; this is still poor, yet comfortable compared to others.
++ However, other Wards have rate of arrest of 15% and above; this is still poor, yet comfortable compared to others.
 
 <img src = "https://user-images.githubusercontent.com/60517587/192198997-2b2da0c4-3386-404e-b9b5-7b5daccab34c.png">
 
@@ -690,11 +700,15 @@ plt.show()
 
 <img src = "https://user-images.githubusercontent.com/60517587/192199006-833b6f31-7c15-4ae6-b28c-7b346d7deecb.png">
 
-+ `Districts` have high enough rate of arrest, with the lowest being close to 20% and this is impressive.
++ `District` have high enough rate of arrest, with the lowest being close to 20% and this is impressive.
 
 ## And... WE'RE DONE!
 
 <img src = "https://user-images.githubusercontent.com/60517587/193709337-8d64de0e-e0ca-4c52-ad92-cd81b83d3c13.gif" width=50% height=10%>
+
+To summarize, Chicago state is not the safest place to be- note that this is taken out of context from other states- and there seems to be multiple security issues that could be worked on.
+
+This has been an interesting study, with a lot of analytical insights within as I'm sure you'd agree.
 
 ---
 
