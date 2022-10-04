@@ -13,7 +13,7 @@ Contained in this repository are:
 
 Enough preamble given, let's dive right into it then!
 
-<img src = "https://user-images.githubusercontent.com/60517587/193845348-305d2338-6c0f-4487-8d74-4fb2edbbda95.gif" width=90% height=20%/>
+<img src = "https://user-images.githubusercontent.com/60517587/193845348-305d2338-6c0f-4487-8d74-4fb2edbbda95.gif" width=80% height=20%/>
 
 ## DATA PRE-PROCESSING
 
@@ -81,7 +81,7 @@ crime_clean  =  crime
 This is common practice in my codes - and I do this for readability, to prevent the dataset from mis-updating, and for easier debugging.
 
 ## DATA CONVERSION & CLEANING
-<img src = "https://user-images.githubusercontent.com/60517587/193684399-a6035d40-2420-4cff-b664-62439da2c3bc.gif" width=50% height=10%/>
+<img src = "https://user-images.githubusercontent.com/60517587/193684399-a6035d40-2420-4cff-b664-62439da2c3bc.gif" width=80% height=20%/>
 
 ### 1. `Date`
 
@@ -170,7 +170,7 @@ As per my ritual, once again - variable switch 👌🏽
 
 Here, we look for more features or columns to extract from our dataset for it to hold more _"analytical water"_. __OBSERVE the following new columns...__
 
-<img src = "https://user-images.githubusercontent.com/60517587/193694512-ccd5d4a4-8a0a-4e30-a41c-62d9ec078a3d.gif" width=50% height=10%/>
+<img src = "https://user-images.githubusercontent.com/60517587/193694512-ccd5d4a4-8a0a-4e30-a41c-62d9ec078a3d.gif" width=80% height=20%/>
 
 ### Street Type
 
@@ -326,7 +326,7 @@ crime_tweak[['dayOfWeek','hourDay','timeOfDay','month']] = date_df
 
 At this point, the dataset has been fully prepared, thus we commence an actual __Analysis__.
 
-<img src = "https://user-images.githubusercontent.com/60517587/193717269-041a3c02-e1aa-4627-a51f-ba5a7da01513.gif" width=40% height=10%/>
+<img src = "https://user-images.githubusercontent.com/60517587/193717269-041a3c02-e1aa-4627-a51f-ba5a7da01513.gif" width=80% height=20%/>
 
 Before that, though, a final variable-switch to lock in all changes - `crime_df = crime_tweak`.
 
@@ -501,7 +501,7 @@ plt.show()
 
 ### **5. What time in the day does crime happen the most?**
 
-<img src = "https://user-images.githubusercontent.com/60517587/193710030-fe8e74b5-1e04-4916-88e6-736772a8d6cb.gif" width=50% height=10%>
+<img src = "https://user-images.githubusercontent.com/60517587/193710030-fe8e74b5-1e04-4916-88e6-736772a8d6cb.gif" width=80% height=20%>
 
 #### **5.1 Initial Time Analysis**
 
@@ -704,7 +704,7 @@ plt.show()
 
 ## And... WE'RE DONE!
 
-<img src = "https://user-images.githubusercontent.com/60517587/193709337-8d64de0e-e0ca-4c52-ad92-cd81b83d3c13.gif" width=50% height=10%>
+<img src = "https://user-images.githubusercontent.com/60517587/193709337-8d64de0e-e0ca-4c52-ad92-cd81b83d3c13.gif" width=80% height=20%>
 
 To summarize, Chicago state is not the safest place to be- note that this is taken out of context from other states- and there seems to be multiple security issues that could be worked on.
 
