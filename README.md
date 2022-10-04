@@ -13,7 +13,7 @@ Contained in this repository are:
 
 Enough preamble given, let's dive right into it then!
 
-<img src = "https://user-images.githubusercontent.com/60517587/193684393-d865fa7c-88b0-4ef6-aead-6ce7632a7b69.gif" width=80% height=10%/>
+<img src = "https://user-images.githubusercontent.com/60517587/193684393-d865fa7c-88b0-4ef6-aead-6ce7632a7b69.gif" width=100% height=30%/>
 
 ## DATA PRE-PROCESSING
 
