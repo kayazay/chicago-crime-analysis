@@ -8,8 +8,9 @@ I took on a mission to explore the crime data of a state in the U.S - Chicago, a
 
 Contained in this repository are:
 + A Jupyter Notebook _(ipynb)_,
-+ Datasets used for analysis,
 + Answers to the questions above, and others.
+
+Link to Dataset on Kaggle:- https://www.kaggle.com/datasets/chicago/chicago-crime
 
 Enough preamble given, let's dive right into it then!
 
