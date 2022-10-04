@@ -1,26 +1,27 @@
 # A COMPREHENSIVE ANALYSIS OF CHICAGO CRIME DATA _(2001-2022)_
 
-I took on a mission to explore the crime data of a state in the U.S - Chicago, as a Capston Project to a Training Program; my aim was to determine the following:
-
+I took on a mission to explore the crime data of a state in the U.S - Chicago, as a Capstone Project to a training program; my aim was to determine the following:
 + __What kinds__ of crime happen the most in Chicago?
 + __When__ is the state the most vulnerable to crime?
 + .. And __where__?
 + __What places__ does crime go unpunished the most?
 
 Contained in this repository are:
++ A Jupyter Notebook _(ipynb)_,
++ Datasets used for analysis,
++ Answers to the questions above, and others.
 
-+ A Jupyter Notebook _(ipynb)_, and
-+ Datasets used for analysis.
+Enough preamble given, let's dive right into it then!
 
-## PREREQUISITES
+<img src = "https://user-images.githubusercontent.com/60517587/193684393-d865fa7c-88b0-4ef6-aead-6ce7632a7b69.gif" width=50% height=10%/>
+
+## DATA PRE-PROCESSING
 
 The following are the libraries installed for this study and a brief why:
-
-+ pandas
-+ math
-+ seaborn
-+ re - REGEX manipulation
-+ matplotlib
++ __pandas__ - manipulation of tabular data
++ __math__ - handling null values
++ __matplotlib__ & __seaborn__ - plotting charts
++ __re__ - REGular EXpressions used for string manipulation
 
 ```py
 import pandas as pd
@@ -29,16 +30,15 @@ import seaborn as sns
 import re
 import matplotlib.pyplot as plt
 ```
-## LOADING THE DATASET
+### Loading the Dataset
 ```py
 filepath  =  "C:/Users/user/Desktop/eze/"
 crime  =  pd.read_csv(filepath+"crime_data_Proj1.csv",index_col=0)
 ```
-_**Note:** The variable `filepath` may be tweaked in accordance with your directory_
+_**Note:** The variable `filepath` may be tweaked in accordance with the directory that holds the datasets._
 
-## DATA PREPROCESSING
+### Overview
 `crime.info()` gives us an overview of the fields in this dataset and respective data types
-
 ```py
 <class 'pandas.core.frame.DataFrame'>
 Int64Index: 2278726 entries, 0 to 2278725
@@ -70,52 +70,41 @@ Data columns (total 22 columns):
 dtypes: bool(2), float64(7), int64(3), object(10)
 memory usage: 369.4+ MB
 ```
-
-First I switch variables to `crime_clean`.
-This is a common practice in my codes - I do this for readability and to prevent the dataset from mis-updating.
-
+Inferences from this statistic would be highlighted in the next phase. First, though, I switch variables to `crime_clean`.
 ```py
 crime_clean  =  crime
 ```
-#### What to Change?
-<insert GIF for change>
+This is common practice in my codes - and I do this for readability, to prevent the dataset from mis-updating, and for easier debugging.
 
-__Date__
+## DATA CONVERSION & CLEANING
+<img src = "https://user-images.githubusercontent.com/60517587/193684399-a6035d40-2420-4cff-b664-62439da2c3bc.gif" width=50% height=10%/>
 
-> Values in these column are recognized as strings.
->
-> It should be converted from an object to datetime.
+### 1. `Date`
 
+> Values in these column are recognized as strings. They should be converted from _object_ to _datetime_.
 ```py
-crime_clean['Date'] = pd.to_datetime(crime['Date'])
+time_format  =  '%m/%d/%Y %H:%M:%S %p'
+crime_clean['Date']  = crime_clean['Date'].apply(lambda  x:  x  if  type(x)!=str  else  dt.strptime(x,  time_format))
 ```
+### 2. `District`, `Ward`, `Community Area` & `Beat`
 
-__District, Ward, Community Area & Beat__
-
-> These are recognized as floats since there are numbers; as opposed to objects since they are really elements of location.
->
-> custom function - `to_str()` was created to do this.
+> These are recognized as floats since they are technically numbers; as opposed to objects since they are really elements of location.
+> A custom function - `to_str()` was created to explicitly perform the conversion.
 
 ```py
 # Created a function that returns null if the value in a column is null & converts to a string if it is not
 def to_str(_unit):
-    if isinstance(_unit, str):
-        return _unit
+    if isinstance(_unit, str) or math.isnan(_unit):
+        unit_done = _unit
     else:
-        if math.isnan(_unit):
-            unit_done=_unit
-        else:
-            unit_done = str(int(_unit))
-        return unit_done
+        unit_done = str(int(_unit))
+    return unit_done
 
 # APPLIED the to_str function on relevant columns
-crime_clean['District'] = crime['District'].apply(to_str)
-crime_clean['Ward'] = crime['Ward'].apply(to_str)
-crime_clean['Community Area'] = crime['Community Area'].apply(to_str)
-crime_clean['Beat'] = crime['Beat'].apply(to_str)
+BCDW = ['Beat', 'Community Area', 'District', 'Ward']
+crime_clean[BCDW] = crime_clean[BCDW].applymap(to_str)
 ```
-
-#### Investigate for Missing Values
+### 3. Investigate for Missing Values
 
 `crime_clean.isna().sum()` shows us how many records in each column have missing values.
 
@@ -152,14 +141,10 @@ dtype: int64
 ```
 
 + `Case Number` has a missing value and this would be dropped.
-
-  > This is because this column holds semi-unique values.
-  >
-  > i.e a crime incident that doesn't have a `Case Number` is an error that might indicate the crime didn't happen
-
-  ```py
+```py
   crime_clean = crime_clean.dropna(subset=['Case Number'])
   ```
+  > Why? This column holds semi-unique values. i.e a crime incident that doesn't have a `Case Number` is an error that __might__ indicate the crime didn't happen.
 
 + Other columns that have missing values are:-
 
@@ -169,23 +154,22 @@ dtype: int64
   + `X & Y Coordinates`,
   + `Lat` & `Long`.
 
-  > All these are elements of location and a missing value means the location was not recorded for some reason.
-  >
-  > Not necessarily that the crime didn't happen
+ > All these are elements of location and a missing value indicates the location was not recorded for some reason. Not necessarily that the crime didn't happen.
 
 ## DATA MANIPULATION
 
-As per my ritual, once again - variable switch <insert finger down emoji>
+As per my ritual, once again - variable switch 👌🏽
 
  `crime_tweak = crime_clean`
 
-Now, we look for more features or columns to extract from our dataset for it to hold more analytical water, as it were. 
+Here, we look for more features or columns to extract from our dataset for it to hold more _"analytical water"_. 
 
-To start, OBSERVE THE FOLLOWING COLUMNS...
+To start, __OBSERVE the following columns...__
 
-<inserts drum rolls GIF>
+<img src = "https://user-images.githubusercontent.com/60517587/193694512-ccd5d4a4-8a0a-4e30-a41c-62d9ec078a3d.gif" width=50% height=10%/>
 
-### Block
+###`Block`
+This column holds the full address of the location a reported crime occurred. `crime_tweak['Block'].head(40).values` gives us the first few records of this column:
 
 ```	py
 array(['085XX S MUSKEGON AVE', '092XX S ELLIS AVE', '062XX N TRIPP AVE',
@@ -205,27 +189,28 @@ array(['085XX S MUSKEGON AVE', '092XX S ELLIS AVE', '062XX N TRIPP AVE',
        '001XX S PULASKI RD', '001XX N DAMEN AVE', '048XX N AVERS AVE'],
       dtype=object)
 ```
-
-This column holds the full address of the location a reported crime occurred. There is a pattern in the last word for most records in this column.
+There is a pattern in the last word for most records in this column.
 
 > __AVE__, __ST__, __BLVD__, __RD__, ...
 
-This indicates the type of street the crime occurred. What if ... <insert bulb emoji> A new column were created to hold this information.
+This indicates the type of street the crime occurred. What if... 🌟💡 a new column were created to hold this information.
 
-+ _**Note**: These street forms however are abbreviated as seen in the array; thus, for ease of compression, there is a need to also output their full meanings._
++ _**Note**: These street forms are abbreviated as seen in the array; thus, for ease of compression, there is a need to also output their full meanings._
 
-+ The __USPS suffix abbreviations__ was referenced to accomplish this.
+The __USPS__ suffix abbreviations was referenced to accomplish this.
 
-  > This table is a universal standard for street abbreviations and their full forms. Link to table - https://www.pb.com/docs/us/pdf/sis/mail-services/usps-suffix-abbreviations.pdf
-
+  > This table is a universal standard for comparing street abbreviations and their full forms.
+  > 
+  > https://www.pb.com/docs/us/pdf/sis/mail-services/usps-suffix-abbreviations.pdf
 
 <details>
     <summary>
         Here are few records from this table for context
     </summary>
-    | | Primary Street | Commonly Used Street | Postal Service Standard |
-   |---:|:-----------------|:-----------------------|:--------------------------|
-  | 0 | ALLEY | ALLEE | ALY | 
+
+| | Primary Street | Commonly Used Street | Postal Service Standard|
+|---:|:-----------------|:-----------------------|:--------------------------|
+   | 0 | ALLEY | ALLEE | ALY | 
   | 1 | ALLEY | ALLEY | ALY | 
   | 2 | ALLEY | ALLY | ALY | 
   | 3 | ALLEY | ALY | ALY |
@@ -246,9 +231,9 @@ This indicates the type of street the crime occurred. What if ... <insert bulb e
   | 18 | BAYOO | BAYOU | BYU | 
   | 19 | BEACH | BCH | BCH |
 
+</details>
 
-
-+ For value matching, this was converted into a dictionary with `Commonly Used Street` as __key__ and `Primary Street` as __values__.
+For value matching, this was converted into a __dictionary__ with `Commonly Used Street` as __key__ and `Primary Street` as __values__.
 
   ```py
   # CREATED a dictionary containing USPS suffix abbreviations
@@ -259,14 +244,15 @@ This indicates the type of street the crime occurred. What if ... <insert bulb e
   abbrev_dict = dict(zip(abbrev['Commonly Used Street'], abbrev['Primary Street']))
   ```
 
-After this, the function `func_block()` was devised to extract the street types, cross match with the USPS abbreviations, and output their corresponding full meanings as a new column.
+After this, the function `func_block()` was devised to extract the street types from __`Block`__, cross match with the USPS abbreviations, and output their corresponding full meanings as a new column.
 
 ```py
+# CREATED a function to extract street type out of the 'Block' column
 def func_block(itB):
     eachB = str(itB)
     # ran a regex search on the Block column and output the type of Block.
     searched_txt = re.search("\w*$", itB).group().lower()
-    # ran an if-statement that outputs the corresponding full name if there's a match
+    # if-statement that outputs the corresponding full name if there's a match
     if searched_txt in abbrev_dict.keys():
         block_done = abbrev_dict[searched_txt]
     else:
@@ -275,13 +261,11 @@ def func_block(itB):
     return block_done if block_done in abbrev_dict.values() else 'Not Found'
 
 # APPLIED function on the relevant column
-crime_tweak['blockType'] = crime_tweak['Block'].apply(func_block)
+crime_tweak["blockType"] = crime_tweak["Block"].apply(func_block)
+crime_tweak = crime_tweak.assign(blockType = crime_tweak['Block'].apply(func_block))
 ```
 
-Further streamlining was needed to also discover the exact street a reported crime occurred. This is imperative to conduct analysis by street level, in addition to street-type level.
-
-+ The function `street_func` was created to do just this
-
+Further streamlining was needed to also discover the __exact street__ a reported crime occurred. This is imperative to conduct analysis by street level, not just street-type level. The function `street_func` was devised to do just this.
 ```py
 def street_func(it2B):
     # PERFORMED regex search and replace apropriately
@@ -293,18 +277,18 @@ def street_func(it2B):
 crime_tweak['actualStreet'] = crime_tweak['Block'].apply(street_func)
 ```
 
-### Date
+__`Date`__
 
 The following features could be extracted from the `Date` column:-
 
-+ Time of day the crime occured - Morning, Afternoon, Evening or Night;
-+ Hour of the day the crime occured;
-+ Day of the week;
-+ Month.
++ __Time of day__ the crime occured - Morning, Afternoon, Evening,.;
++ __Hour__ of the day the crime occured;
++ __Day of the week__;
++ __Month__.
 
-A function `datefunc` was engineered for this purpose.
-
+Another function `datefunc` was engineered for this purpose.
 ```py
+# CREATED a function to extract all the features mentioned above
 def datefunc(itD):
     dow = itD.strftime("%A")
     mnth = itD.strftime("%m")
@@ -324,57 +308,55 @@ def datefunc(itD):
 
 # APPLIED datefunc() on the relevant column to get a series of outputs
 datefunc_applied = crime_tweak['Date'].apply(datefunc)
-# CONVERTED series to a DataFrame
 date_df = pd.DataFrame(datefunc_applied.tolist())
 
 # CREATED new columns and fill with values gotten from the above operation.
 crime_tweak[['dayOfWeek','hourDay','timeOfDay','month']] = date_df
 ```
 
-And... WE'RE DONE!
-
-<inserts AND ITS A WRAP GIF>
-
 At this point, the dataset has been fully prepared, thus we commence an actual __Analysis__.
 
-> Before that, a final variable-switch to lock in all changes <insert finger emoji> 
->
-> `crime_df = crime_tweak`. 
+<img src = "https://user-images.githubusercontent.com/60517587/193717269-041a3c02-e1aa-4627-a51f-ba5a7da01513.gif" width=40% height=10%/>
 
-Finally, `crime_df.head().T` gives us an overview of the dataset along with all new features extracted.
+Before that, though, a final variable-switch to lock in all changes - `crime_df = crime_tweak`.
 
-|                      | 0                             | 1                             | 2                             | 3                             | 4                                      | 5                             | 6                             | 7                             | 8                             | 9                               |
-| :------------------- | :---------------------------- | :---------------------------- | :---------------------------- | :---------------------------- | :------------------------------------- | :---------------------------- | :---------------------------- | :---------------------------- | :---------------------------- | :------------------------------ |
-| ID                   | 6407111                       | 11398199                      | 5488785                       | 11389116                      | 12420431                               | 1699235                       | 5061155                       | 9876456                       | 7582927                       | 10566046                        |
-| Case Number          | HP485721                      | JB372830                      | HN308568                      | JB361368                      | JE297624                               | G498287                       | HM660983                      | HX527438                      | HS386492                      | HZ313634                        |
-| Date                 | 2008-07-26 14:30:00           | 2018-07-31 10:57:00           | 2007-04-27 10:30:00           | 2018-07-23 08:55:00           | 2021-07-11 06:40:00                    | 2001-08-21 00:00:00           | 2006-10-14 22:00:00           | 2014-12-02 11:48:00           | 2010-06-30 01:00:00           | 2016-06-18 23:15:00             |
-| Block                | 085XX S MUSKEGON AVE          | 092XX S ELLIS AVE             | 062XX N TRIPP AVE             | 0000X N KEELER AVE            | 016XX W HARRISON ST                    | 003XX W 28 PL                 | 006XX S CENTRAL AVE           | 043XX W POTOMAC AVE           | 032XX W PIERCE AVE            | 021XX N CALIFORNIA AVE          |
-| IUCR                 | 1320                          | 143C                          | 0610                          | 0560                          | 051A                                   | 0810                          | 0320                          | 1811                          | 0910                          | 1811                            |
-| Primary Type         | CRIMINAL DAMAGE               | WEAPONS VIOLATION             | BURGLARY                      | ASSAULT                       | ASSAULT                                | THEFT                         | ROBBERY                       | NARCOTICS                     | MOTOR VEHICLE THEFT           | NARCOTICS                       |
-| Description          | TO VEHICLE                    | UNLAWFUL POSS AMMUNITION      | FORCIBLE ENTRY                | SIMPLE                        | AGGRAVATED - HANDGUN                   | OVER $500                     | STRONGARM - NO WEAPON         | POSS: CANNABIS 30GMS OR LESS  | AUTOMOBILE                    | POSS: CANNABIS 30GMS OR LESS    |
-| Location Description | STREET                        | POOL ROOM                     | RESIDENCE                     | NURSING HOME/RETIREMENT HOME  | PARKING LOT / GARAGE (NON RESIDENTIAL) | STREET                        | CTA PLATFORM                  | ALLEY                         | STREET                        | POLICE FACILITY/VEH PARKING LOT |
-| Arrest               | False                         | True                          | True                          | False                         | False                                  | False                         | False                         | True                          | False                         | True                            |
-| Domestic             | False                         | False                         | False                         | False                         | False                                  | False                         | False                         | False                         | False                         | False                           |
-| Beat                 | 423                           | 413                           | 1711                          | 1115                          | 1231                                   | 2113                          | 1513                          | 2534                          | 1422                          | 1414                            |
-| District             | 4                             | 4                             | 17                            | 11                            | 12                                     | 2                             | 15                            | 25                            | 14                            | 14                              |
-| Ward                 | 10                            | 8                             | 39                            | 28                            | 27                                     | nan                           | 29                            | 37                            | 26                            | 35                              |
-| Community Area       | 46                            | 47                            | 12                            | 26                            | 28                                     | nan                           | 25                            | 23                            | 23                            | 22                              |
-| FBI Code             | 14                            | 15                            | 05                            | 08A                           | 04A                                    | 06                            | 03                            | 18                            | 07                            | 18                              |
-| X Coordinate         | 1196638.0                     | 1184499.0                     | 1146911.0                     | 1148388.0                     | 1165430.0                              | 1174343.0                     | 1139154.0                     | 1147306.0                     | 1154458.0                     | 1157345.0                       |
-| Y Coordinate         | 1848800.0                     | 1843935.0                     | 1941022.0                     | 1899882.0                     | 1897441.0                              | 1885951.0                     | 1896536.0                     | 1908305.0                     | 1910116.0                     | 1914452.0                       |
-| Year                 | 2008                          | 2018                          | 2007                          | 2018                          | 2021                                   | 2001                          | 2006                          | 2014                          | 2010                          | 2016                            |
-| Updated On           | 02/28/2018 03:56:25 PM        | 08/07/2018 04:02:59 PM        | 02/28/2018 03:56:25 PM        | 07/30/2018 03:52:24 PM        | 07/18/2021 04:56:02 PM                 | 08/17/2015 03:03:40 PM        | 02/28/2018 03:56:25 PM        | 02/10/2018 03:50:01 PM        | 02/10/2018 03:50:01 PM        | 02/10/2018 03:50:01 PM          |
-| Latitude             | 41.739979622                  | 41.726922145                  | 41.994137622                  | 41.881217483                  | 41.874173691                           | 41.842450075                  | 41.872208575                  | 41.904351902                  | 41.909181404                  | 41.921021491                    |
-| Longitude            | -87.555120042                 | -87.599746995                 | -87.734959049                 | -87.730589961                 | -87.668082118                          | -87.635700695                 | -87.764578577                 | -87.734347128                 | -87.708027242                 | -87.69730355                    |
-| Location             | (41.739979622, -87.555120042) | (41.726922145, -87.599746995) | (41.994137622, -87.734959049) | (41.881217483, -87.730589961) | (41.874173691, -87.668082118)          | (41.842450075, -87.635700695) | (41.872208575, -87.764578577) | (41.904351902, -87.734347128) | (41.909181404, -87.708027242) | (41.921021491, -87.69730355)    |
-| blockType            | avenue                        | avenue                        | avenue                        | avenue                        | street                                 | place                         | avenue                        | avenue                        | avenue                        | avenue                          |
-| actualStreet         | MUSKEGON AVE                  | ELLIS AVE                     | TRIPP AVE                     | KEELER AVE                    | HARRISON ST                            | 28 PL                         | CENTRAL AVE                   | POTOMAC AVE                   | PIERCE AVE                    | CALIFORNIA AVE                  |
-| dayOfWeek            | Saturday                      | Tuesday                       | Friday                        | Monday                        | Sunday                                 | Tuesday                       | Saturday                      | Tuesday                       | Wednesday                     | Saturday                        |
-| hourDay              | 14                            | 10                            | 10                            | 08                            | 06                                     | 00                            | 22                            | 11                            | 01                            | 23                              |
-| timeOfDay            | Afternoon                     | Morning                       | Morning                       | Morning                       | Morning                                | Night                         | Night                         | Morning                       | Night                         | Night                           |
-| month                | 07                            | 07                            | 04                            | 07                            | 07                                     | 08                            | 10                            | 12                            | 06                            | 06                              |
+<details>
+    <summary>
+    Finally,we get an overview of the dataset along with all new features extracted.
+    </summary>
 
+|                      | 0                             | 1                             | 2                             | 3                             | 4                                      |
+|:---------------------|:------------------------------|:------------------------------|:------------------------------|:------------------------------|:---------------------------------------|
+| ID                   | 6407111                       | 11398199                      | 5488785                       | 11389116                      | 12420431                               |
+| Case Number          | HP485721                      | JB372830                      | HN308568                      | JB361368                      | JE297624                               |
+| Date                 | 2008-07-26 02:30:00           | 2018-07-31 10:57:00           | 2007-04-27 10:30:00           | 2018-07-23 08:55:00           | 2021-07-11 06:40:00                    |
+| Block                | 085XX S MUSKEGON AVE          | 092XX S ELLIS AVE             | 062XX N TRIPP AVE             | 0000X N KEELER AVE            | 016XX W HARRISON ST                    |
+| IUCR                 | 1320                          | 143C                          | 0610                          | 0560                          | 051A                                   |
+| Primary Type         | CRIMINAL DAMAGE               | WEAPONS VIOLATION             | BURGLARY                      | ASSAULT                       | ASSAULT                                |
+| Description          | TO VEHICLE                    | UNLAWFUL POSS AMMUNITION      | FORCIBLE ENTRY                | SIMPLE                        | AGGRAVATED - HANDGUN                   |
+| Location Description | STREET                        | POOL ROOM                     | RESIDENCE                     | NURSING HOME/RETIREMENT HOME  | PARKING LOT / GARAGE (NON RESIDENTIAL) |
+| Arrest               | False                         | True                          | True                          | False                         | False                                  |
+| Domestic             | False                         | False                         | False                         | False                         | False                                  |
+| Beat                 | 423                           | 413                           | 1711                          | 1115                          | 1231                                   |
+| District             | 4                             | 4                             | 17                            | 11                            | 12                                     |
+| Ward                 | 10                            | 8                             | 39                            | 28                            | 27                                     |
+| Community Area       | 46                            | 47                            | 12                            | 26                            | 28                                     |
+| FBI Code             | 14                            | 15                            | 05                            | 08A                           | 04A                                    |
+| X Coordinate         | 1196638.0                     | 1184499.0                     | 1146911.0                     | 1148388.0                     | 1165430.0                              |
+| Y Coordinate         | 1848800.0                     | 1843935.0                     | 1941022.0                     | 1899882.0                     | 1897441.0                              |
+| Year                 | 2008                          | 2018                          | 2007                          | 2018                          | 2021                                   |
+| Updated On           | 02/28/2018 03:56:25 PM        | 08/07/2018 04:02:59 PM        | 02/28/2018 03:56:25 PM        | 07/30/2018 03:52:24 PM        | 07/18/2021 04:56:02 PM                 |
+| Latitude             | 41.739979622                  | 41.726922145                  | 41.994137622                  | 41.881217483                  | 41.874173691                           |
+| Longitude            | -87.555120042                 | -87.599746995                 | -87.734959049                 | -87.730589961                 | -87.668082118                          |
+| Location             | (41.739979622, -87.555120042) | (41.726922145, -87.599746995) | (41.994137622, -87.734959049) | (41.881217483, -87.730589961) | (41.874173691, -87.668082118)          |
+| blockType            | avenue                        | avenue                        | avenue                        | avenue                        | street                                 |
+| actualStreet         | MUSKEGON AVE                  | ELLIS AVE                     | TRIPP AVE                     | KEELER AVE                    | HARRISON ST                            |
+| dayOfWeek            | Saturday                      | Tuesday                       | Friday                        | Monday                        | Sunday                                 |
+| hourDay              | 02                            | 10                            | 10                            | 08                            | 06                                     |
+| timeOfDay            | Night                         | Morning                       | Morning                       | Morning                       | Morning                                |
+| month                | 07                            | 07                            | 04                            | 07                            | 07                                     |
 
+</details>
 
 ## DATA ANALYSIS
 
@@ -382,19 +364,25 @@ Let's dive into the data and gain trustworthy insights from charts & graphs!
 
 ### **1. How many unique crime reports are in this dataset?**
 
-```PY
+<details>
+    <summary>
+       Code
+   </summary>
+
+```py
 year_range = crime_df['Year'].max() - crime_df['Year'].min()
 total_crime = crime_df['ID'].nunique()
 per_year = total_crime//year_range
 
 print("There have been {0} unique crime reports.\nIn {1} years.\nThis is an estimate of {2} crime reports every year.".format(total_crime, year_range, per_year))
 ```
+</details>
 
-> ```PY
-> There have been 2278725 unique crime reports.
-> In 21 years.
-> This is an estimate of 108510 crime reports every year.
-> ```
+```py
+There have been 2278725 unique crime reports.
+In 21 years.
+This is an estimate of 108510 crime reports every year.
+```
 
 + This is an interesting summary statistic of the dataset.
 + In the rest of this study, other analytical questions would be answered about demography of location of crime report, time of report, etc. 
@@ -402,12 +390,19 @@ print("There have been {0} unique crime reports.\nIn {1} years.\nThis is an esti
 
 ### **2. What are the most crime-prone locations?**
 
-```PY
+<details>
+    <summary>
+       Code
+      </summary>
+
+```py
 blockG = pd.DataFrame(crime_df.groupby('Block').size(), columns = ['frequency'])
 blockG = blockG.sort_values('frequency', ascending = False).reset_index()
 
 blockG.head(16)
 ```
+</details>
+
 
 |      | Block                               | frequency |
 | ---: | :---------------------------------- | --------: |
@@ -428,10 +423,20 @@ blockG.head(16)
 |   14 | 006XX N MICHIGAN AVE                |      1276 |
 |   15 | 057XX S CICERO AVE                  |      1233 |
 
-### 3. What streets have had the most crime reports?
++ These addresses are masked for data protection reasons, and that's understandable. However, one clear insight from this is that some houses are targeted more than others by criminals.
++ Places like this would definitely require the concentrated efforts of the police department to curtail crime rate.
++ Something else is observed though- specific streets are being repeated, throughout these 15 locations.
++ Perhaps it's not just a house that's at the receiving end of high-rate crime, but the whole street? Next chart tells us more.
 
-```PY
-# CREATED a table to hold the street values and frequency of occurence
+### **3. What streets have had the most crime reports?**
+
+<details>
+    <summary>
+       Code to plot chart
+      </summary>
+
+```py
+# CREATED a table to hold the street names grouped by frequency of occurence
 st_freq = pd.DataFrame(crime_df.groupby('actualStreet').size(), columns=['frequency'])
 st_freq = st_freq.reset_index()
 
@@ -446,10 +451,19 @@ plt.xticks(rotation = 45)
 plt.xlabel('Exact Street Crime Occured')
 plt.show()
 ```
+</details>
 
 <img src = "https://user-images.githubusercontent.com/60517587/192199010-64e46809-20fb-420e-a53b-afc36da3179f.png">
 
++ Out of the 15 streets shown on this chart, 2 stand out the most - __STATE ST__ & __MICHIGAN AVE__ with very high frequency of crime reports.
++ This is not by chance; if investigated properly, the reason for this gaping figures would be discovered, and appropriate actions taken.
+
 ### **4. Where does crime happen the most in Chicago?**
+
+<details>
+    <summary>
+       Code to plot chart
+      </summary>
 
 ```py
 # We do a groupby on 'blockType' to to get a table of types and frequency
@@ -469,15 +483,24 @@ plt.xlabel('Types of Street')
 plt.ylabel('Number of Crimes Reported')
 plt.show()
 ```
+</details>
 
 <img src = "https://user-images.githubusercontent.com/60517587/192199013-44a01582-4e95-4f6e-8b83-ed4264439563.png">
 
++ Crime occurs the most in __streets__ & __avenues__ than it does any other place.
+
 ### **5. What time in the day does crime happen the most?**
+
+<img src = "https://user-images.githubusercontent.com/60517587/193710030-fe8e74b5-1e04-4916-88e6-736772a8d6cb.gif" width=50% height=10%>
 
 #### **5.1 Initial Time Analysis**
 
+<details>
+    <summary>
+       Code to plot chart
+      </summary>
+
 ```py
-# now to plot
 plt.figure(figsize=(8,5))
 plt.title('Time of Crime Report', fontsize=10)
 
@@ -486,10 +509,21 @@ plt.xlabel('Time in the Day')
 plt.ylabel('Number of Crimes Reported')
 plt.show()
 ```
+</details>
 
 <img src = "https://user-images.githubusercontent.com/60517587/192199015-2e3cd898-7e19-4cae-9fa0-29c432a5d0c0.png">
 
++ Crime occurs the most at __Night__ in Chicago, which doesn't come as a shock.
++ But what does, is that the 2nd highest is the _Afternoon__. That's strange, why would there be high rate of crime in broad daylight?
++ Perhaps it has something to do with wrong shift-allocation or deployment of police personnel to high crime areas.
++ Could a more detailed chart provide more insight?
+
 #### **5.2 Comprehensive Time Analysis**
+
+<details>
+    <summary>
+       Code to plot chart
+      </summary>
 
 ```py
 crime_df = crime_df.sort_values('hourDay')
@@ -502,10 +536,20 @@ plt.xlabel('Hour in the Day')
 plt.ylabel('Number of Crime Reports')
 plt.show()
 ```
+</details>
 
 <img src = "https://user-images.githubusercontent.com/60517587/192199016-490fbcff-8c43-4649-8321-6d3ec91cb890.png">
 
++ This chart fortifies the previous understanding we had gotten from our initial time analysis.
++ Streamlining it down to the hour, crime occurs the most at __12 noon__ & __12 midnight__, as well as between __18:00 - 22:00__.
++ This could help in appropriate shift-planning and deployment strategy.
+
 ### **6. In what months have the highest number of crimes been reported?**
+
+<details>
+    <summary>
+       Code to plot chart
+      </summary>
 
 ```py
 plt.figure(figsize=(10,5))
@@ -516,10 +560,18 @@ plt.ylabel('Number of Crime Reports')
 plt.xlabel('Months')
 plt.show()
 ```
+</details>
 
-<img src = "">
+<img src = "https://user-images.githubusercontent.com/60517587/192199017-85788452-c687-4071-a453-3589b06924a2.png">
+
++ The middle of the year - between May and August - records more crime than all other month. Investigation on why this is so is beyond this study.
 
 ### **7. What days of the week is crime reported the most in?**
+
+<details>
+    <summary>
+       Code to plot chart
+      </summary>
 
 ```py
 ordered_days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
@@ -535,10 +587,20 @@ plt.xlabel('Days of the Week')
 plt.ylabel('Number of Crime Reports')
 plt.show()
 ```
+</details>
 
 <img src = "https://user-images.githubusercontent.com/60517587/192199021-c80ad6fa-882f-4af4-810b-803a45623bf0.png">
 
++ On _prima facie_, one might conclude that this chart holds no statistical inference.
++ However a closer look at the bars indicate that __Friday__ & __Saturday__ have a more frequent crime occurrence than all other days.
++ Might this be as a result of relaxation of security laws because of the weekends?
+
 ### **8. What types of crime happen most frequently in Chicago?**
+
+<details>
+    <summary>
+       Code to plot chart
+      </summary>
 
 ```py
 # We do a groupby on 'Primary Type' to get a table category and frequency
@@ -546,25 +608,33 @@ pt_freq = pd.DataFrame(crime_df.groupby('Primary Type').size(),columns=['frequen
 # We reset the index of this dataframe
 pt_freq = pt_freq.reset_index()
 pt_freq = pt_freq.sort_values('frequency', ascending=False)
-# now to plot
 
+# now to plot
 plt.figure(figsize=(12,6))
 plt.title('Top 10 Most Frequent Primary Types of Crime', fontsize=15)
-
-#sns.barplot(data = pt_freq[pt_freq['frequency']>100000], x = 'Primary Type', y='frequency')
-
+#
 sns.barplot(data=pt_freq[:10], x='Primary Type', y='frequency')
 plt.ylabel('Number of Crimes Reported')
 plt.xticks(rotation = 45)
 plt.show()
 ```
+</details>
 
 <img src = "https://user-images.githubusercontent.com/60517587/192199025-758b4066-9212-4e7f-843d-b56818dd4b52.png">
 
-### **Analysis on Elements of Location against Rate of Arrest**
+### **Elements of Location against Rate of Arrest**
+
+It's not enough to discover where crime is being reported the most in, it's worth also considering the "success rate" of arrests in these respective locations.
+In other words, __where does crime go unpunished__ the most?
+To make these insights worthwhile, 4 elements of location were considered:
++ __`District`, `Ward`, `Community Area` & `Beat`__ 
+
+For ease and reusability, a function- `locate_func()` was created to accept two inputs: 
++ name of respective column,
++ bottom N parameter.
 
 ```py
-#CREATED a function to accept columns of crime_df - elements of location - and pivots it against Arrest column, as well as a parameter for Bottom N
+#CREATED a function to accept elements of location and pivot it against Arrest column, as well as a parameter for Bottom N
 def locate_func(eachL, bottomN):
     bottomN = int(bottomN)
     # extracted a table of relevant eachL & Arrest values
@@ -584,7 +654,13 @@ def locate_func(eachL, bottomN):
     return sns.barplot(data = pivot_df[:bottomN], x = eachL, y = 'RateOfArrest'), plt.ylabel('Percentage of Rate of Arrest')
 ```
 
+Inferences from the resulting charts would serve as an advisement to the Chicago State Police Department as to where crime is left unchecked the most within Chicago.
+Thus, there could be logical deployment of more military personnel in locations with the lowest Rate of Arrest.
 
+<details>
+    <summary>
+       Code to plot chart
+      </summary>
 
 ```py
 # now we plot all 4 graphs
@@ -596,11 +672,30 @@ locate_func('District', 15)
 plt.ylabel('Percentage of Rate of Arrest')
 plt.show()
 ```
+</details>
 
 <img src = "https://user-images.githubusercontent.com/60517587/192199029-d9f8dd8e-e746-4282-b26e-58aca4f80f4a.png">
 
++ `Beat` __1214__, __1935__, __235__ have pretty low rates of arrest when compared to the others.
++ _An example of how the chart could be read:_ `Beat` __1214__ has a rate of arrest of around 7%, this could be interpreted as - Out of a 100 crime reports in this `Beat`, only 7 apprehensions were made. This, of course, is a very poor stat.
+
 <img src = "https://user-images.githubusercontent.com/60517587/192198990-9ab59b2c-ec66-4e1e-8305-2a252cb6fc47.png">
+
++ `Ward` __43__ particularly has close to 12% rate of arrest.
++ However, other `Wards` have rate of arrest of 15% and above; this is still poor, yet comfortable compared to others.
 
 <img src = "https://user-images.githubusercontent.com/60517587/192198997-2b2da0c4-3386-404e-b9b5-7b5daccab34c.png">
 
++ Similar poor statistics can be seen for `Community Area`.
+
 <img src = "https://user-images.githubusercontent.com/60517587/192199006-833b6f31-7c15-4ae6-b28c-7b346d7deecb.png">
+
++ `Districts` have high enough rate of arrest, with the lowest being close to 20% and this is impressive.
+
+## And... WE'RE DONE!
+
+<img src = "https://user-images.githubusercontent.com/60517587/193709337-8d64de0e-e0ca-4c52-ad92-cd81b83d3c13.gif" width=50% height=10%>
+
+---
+
+<p>&copy; 2022 Kingsley Izima</p>
