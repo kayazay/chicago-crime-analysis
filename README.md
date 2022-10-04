@@ -38,7 +38,7 @@ filepath  =  "C:/Users/user/Desktop/eze/"
 crime  =  pd.read_csv(filepath+"crime_data_Proj1.csv",index_col=0)
 ```
 
-_**Note:** The variable `filepath` may be tweaked in accordance with the directory that holds the datasets._
+_**Note:** The variable `filepath` may be tweaked in accordance with the directory that holds the datasets_
 
 ### Overview
 `crime.info()` gives us an overview of the fields in this dataset and respective data types
