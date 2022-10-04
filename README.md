@@ -706,7 +706,7 @@ plt.show()
 
 <img src = "https://user-images.githubusercontent.com/60517587/193709337-8d64de0e-e0ca-4c52-ad92-cd81b83d3c13.gif" width=80% height=20%>
 
-To summarize, Chicago state is not the safest place to be- note that this is taken out of context from other states- and there seems to be multiple security issues that could be worked on.
+To summarize, Chicago state is not the safest place to be- note that this is taken out of context from other states in the U.S- and there are multiple security issues that could be worked on.
 
 This has been an interesting study, with a lot of analytical insights within as I'm sure you'd agree.
 
